@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigQuery Release Notes Tracker</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Main Style -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="glow-bg"></div>
+    
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="bq-logo-icon">
+                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="currentColor"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1>BigQuery Release Notes</h1>
+                    <p class="subtitle">Stay updated with Google Cloud BigQuery developments</p>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <button id="theme-toggle-btn" class="btn btn-secondary btn-icon-only" title="Toggle theme (Light / Dark)">
+                    <!-- Sun Icon (shown in light mode) -->
+                    <svg id="theme-sun-icon" class="hidden" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                    <!-- Moon Icon (shown in dark mode) -->
+                    <svg id="theme-moon-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </button>
+                <span id="last-updated-time" class="last-updated">Updating...</span>
+                <button id="export-csv-btn" class="btn btn-secondary" title="Export currently filtered release notes to CSV">
+                    <span>Export CSV</span>
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                </button>
+                <button id="refresh-btn" class="btn btn-primary" title="Fetch latest release notes">
+                    <span class="btn-text">Refresh</span>
+                    <span class="spinner-icon hidden">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="spin">
+                            <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+                            <path d="M12 2C6.47715 2 2 6.47715 2 12C2 14.2483 2.74823 16.3213 4 18"></path>
+                        </svg>
+                    </span>
+                    <span class="refresh-arrow-icon">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                        </svg>
+                    </span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Search and Filter Controls -->
+        <section class="controls-card glass-panel">
+            <div class="search-box">
+                <div class="search-icon">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </div>
+                <input type="text" id="search-input" placeholder="Search release notes by keywords (e.g. Gemini, partition, performance)..." autocomplete="off">
+                <button id="clear-search" class="clear-btn hidden" title="Clear search">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="filter-group">
+                <span class="filter-label">Filter by Type:</span>
+                <div class="filter-tags" id="filter-tags-container">
+                    <button class="filter-tag active" data-filter="all">All Updates</button>
+                    <button class="filter-tag" data-filter="feature">Features</button>
+                    <button class="filter-tag" data-filter="changed">Changed</button>
+                    <button class="filter-tag" data-filter="issue">Issues</button>
+                    <button class="filter-tag" data-filter="deprecated">Deprecated</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <span id="results-count">Showing 0 release notes</span>
+            <div class="stats-divider"></div>
+            <span id="active-filters-desc"></span>
+        </div>
+
+        <!-- Release Notes Container -->
+        <main class="release-list" id="release-list-container">
+            <!-- Loading Skeleton States -->
+            <div class="skeleton-card glass-panel">
+                <div class="skeleton-header">
+                    <div class="skeleton-badge"></div>
+                    <div class="skeleton-date"></div>
+                </div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line short"></div>
+                <div class="skeleton-footer"></div>
+            </div>
+            <div class="skeleton-card glass-panel">
+                <div class="skeleton-header">
+                    <div class="skeleton-badge"></div>
+                    <div class="skeleton-date"></div>
+                </div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-footer"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Twitter Composer Modal (Glassmorphic) -->
+    <div id="tweet-modal" class="modal-overlay hidden">
+        <div class="modal-box glass-panel animate-scale-in">
+            <header class="modal-header">
+                <div class="modal-title">
+                    <span class="twitter-icon blue">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                        </svg>
+                    </span>
+                    <h2>Compose Tweet</h2>
+                </div>
+                <button id="close-modal-btn" class="close-btn" title="Close modal">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </header>
+
+            <div class="modal-body">
+                <p class="modal-subtitle">Share this BigQuery release note on X (formerly Twitter). You can customize the message below:</p>
+                <div class="textarea-container">
+                    <textarea id="tweet-text-area" rows="6" maxlength="280"></textarea>
+                    <div class="char-counter-container">
+                        <span id="char-counter" class="char-counter">0 / 280</span>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="modal-footer">
+                <button id="cancel-tweet-btn" class="btn btn-secondary">Cancel</button>
+                <a id="share-tweet-btn" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-twitter">
+                    <span class="twitter-icon">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                        </svg>
+                    </span>
+                    <span>Post on X</span>
+                </a>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Notification Toast for Copy actions -->
+    <div id="toast" class="toast hidden">Copied to clipboard!</div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
