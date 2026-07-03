@@ -7,3 +7,6 @@ env/
 node_modules/
 .env
 .env.*
+.adk/
+.google-agents-cli/
+*.log
