@@ -91,6 +91,6 @@ root_agent = Workflow(
 )
 
 app = App(
-    root_agent=root_agent,
-    name="customer-support-agent",
+root_agent=root_agent,
+name='app',
 )
