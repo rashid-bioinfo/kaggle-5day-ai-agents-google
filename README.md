@@ -26,7 +26,7 @@ the course.
 | Day 1 | The new SDLC with vibe coding | `1_Day1/` | Added slides and starter project |
 | Day 2 | Agent tools and interoperability | `2_Day2/` | Added course slides |
 | Day 3 | Agent skills | `3_Day3/` | Added slides and skill examples |
-| Day 4 | In progress / to be added | TBD | Pending |
+| Day 4 | Agent security and evaluation | `4_Day4/`, `agy-cli-projects/ambient-expense-agent/` | Added slides and ambient expense agent project |
 | Day 5 | In progress / to be added | TBD | Pending |
 
 ## Repository Layout
@@ -41,7 +41,10 @@ the course.
 ├── 3_Day3/
 │   ├── Agent Skills_Day_3.pdf
 │   └── antigravity-skills/
+├── 4_Day4/
+│   └── Vibe Coding Agent Security and Evaluation_Day_4.pdf
 ├── agy-cli-projects/
+│   ├── ambient-expense-agent/
 │   ├── bq-releases-notes/
 │   ├── customer-support-agent/
 │   └── myProject/
@@ -51,6 +54,56 @@ the course.
 ```
 
 ## Main Projects
+
+### Ambient Expense Agent
+
+Path: `agy-cli-projects/ambient-expense-agent/`
+
+An event-driven ADK `Workflow` (not a single chat agent) that approves or
+escalates expense reports submitted as Pub/Sub-style JSON events. This is the
+most feature-complete project in the repo: deterministic routing, PII
+scrubbing, prompt-injection screening, LLM risk review, and a human-in-the-loop
+approval step, backed by real unit tests and a custom eval harness.
+
+Flow:
+
+1. Parse the incoming expense event (plain JSON, base64 Pub/Sub payload, or a
+   pasted Pub/Sub push envelope).
+2. Scrub PII (SSNs and Luhn-validated credit card numbers) before it touches
+   workflow state, the LLM, or logs.
+3. Route deterministically on amount: auto-approve under the configured
+   threshold, otherwise continue to a security checkpoint.
+4. Screen the description for prompt-injection phrases (e.g. "ignore previous
+   instructions"); flagged expenses skip the LLM and go straight to human
+   review.
+5. Clean high-value expenses get an LLM risk review (`risk_review_agent`).
+6. All high-value expenses pause for a human approve/reject decision via ADK's
+   `RequestInput`/resume mechanism before a final `ApprovalRecord` is emitted.
+
+Key files:
+
+- `expense_agent/workflow.py` - Workflow graph, node functions, and PII/prompt
+  injection safeguards.
+- `expense_agent/schemas.py` - Typed Pydantic payloads (`Expense`,
+  `RoutedExpense`, `SecurityReport`, `ApprovalRecord`, `RiskReview`,
+  `HumanDecision`).
+- `expense_agent/config.py` - Approval threshold and prompt-injection pattern
+  list.
+- `app/agent.py` - Re-exports `expense_agent.workflow` for the generated
+  FastAPI/A2A scaffold.
+- `tests/unit/`, `tests/integration/` - Workflow routing, PII redaction, and
+  Pub/Sub trigger tests.
+- `tests/eval/` - Custom `routing_correctness` and `security_containment`
+  eval metrics.
+
+Typical development flow:
+
+```bash
+cd agy-cli-projects/ambient-expense-agent
+agents-cli install
+agents-cli playground
+uv run pytest tests/unit tests/integration
+```
 
 ### BigQuery Release Notes Tracker
 
@@ -227,6 +280,22 @@ Artifacts:
 - `3_Day3/Agent Skills_Day_3.pdf`
 - `3_Day3/antigravity-skills/`
 
+### Day 4: Agent Security And Evaluation
+
+Focus:
+
+- Guarding an agent workflow against prompt injection and PII leakage before
+  data reaches an LLM or gets logged.
+- Building deterministic pre-LLM checkpoints alongside LLM-based review.
+- Adding a human-in-the-loop approval step for high-risk decisions.
+- Writing a custom eval harness (routing correctness, security containment)
+  instead of relying on ad hoc manual checks.
+
+Artifacts:
+
+- `4_Day4/Vibe Coding Agent Security and Evaluation_Day_4.pdf`
+- `agy-cli-projects/ambient-expense-agent/`
+
 ## Reproducibility Practices
 
 This is a learning repository, but it still follows a few research-friendly
@@ -248,15 +317,18 @@ The repository was organized into meaningful commits:
 - `Update customer support agent workflow`
 - `Align customer support app entrypoint`
 - `Add comprehensive course README`
+- `Add Day 4 materials and ambient expense agent project`
 
 ## Next Steps
 
-- Add Day 4 and Day 5 materials as the course progresses.
+- Add Day 5 materials as the course progresses.
 - Add screenshots or short demos for each runnable project.
 - Add a root `Makefile` with validation commands for subprojects.
 - Add a short reflection after each day covering what worked, what failed, and
   what needs deeper review.
 - Expand the customer-support agent with test cases for routing and refusals.
+- Wire the ambient expense agent's eval dataset up to CI once Day 5 covers
+  deployment.
 
 ## Reference
 
